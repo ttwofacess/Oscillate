@@ -2,6 +2,8 @@ const STORAGE_KEY = 'dias_habiles_v1';
 const MIN_ALERT = 60000;
 const MAX_ALERT = 76000;
 let chartInstance = null;
+let currentPage = 1;
+const pageSize = 5;
 
 /* ---- Storage ---- */
 function loadData() {
@@ -282,8 +284,20 @@ function renderChart(rows) {
 /* ---- TABLE ---- */
 function renderTable(rows) {
   const tbody = document.getElementById('data-tbody');
+  const pagination = document.getElementById('pagination-controls');
   tbody.innerHTML = '';
-  [...rows].reverse().forEach(r => {
+  
+  const sortedRows = [...rows].reverse();
+  const totalPages = Math.ceil(sortedRows.length / pageSize);
+  
+  // Ajustar página actual si queda fuera de rango (ej. al borrar)
+  if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+
+  const start = (currentPage - 1) * pageSize;
+  const end = start + pageSize;
+  const pageRows = sortedRows.slice(start, end);
+
+  pageRows.forEach(r => {
     const amp    = r.max - r.min;
     const ampPct = ((r.max - r.min) / r.min * 100).toFixed(2);
     let badges   = '';
@@ -304,6 +318,22 @@ function renderTable(rows) {
       <td><button class="del-btn" onclick="deleteRow(${r.ts})" title="Eliminar">×</button></td>
     </tr>`;
   });
+
+  // Render pagination controls
+  if (totalPages > 1) {
+    pagination.innerHTML = `
+      <button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(-1)">← Ant.</button>
+      <span class="page-info">Pág. ${currentPage} de ${totalPages}</span>
+      <button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(1)">Sig. →</button>
+    `;
+  } else {
+    pagination.innerHTML = '';
+  }
+}
+
+function changePage(delta) {
+  currentPage += delta;
+  render();
 }
 
 /* ---- KEYBOARD ---- */
