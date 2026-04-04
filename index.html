@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0d1117">
+<title>Tracker Días Hábiles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #1c2128;
+  --border: rgba(255,255,255,.08);
+  --border2: rgba(255,255,255,.14);
+  --text: #e6edf3;
+  --muted: #7d8590;
+  --accent: #388bfd;
+  --red: #f85149;
+  --amber: #d29922;
+  --green: #3fb950;
+  --red-bg: rgba(248,81,73,.12);
+  --amber-bg: rgba(210,153,34,.12);
+  --green-bg: rgba(63,185,80,.12);
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: 3rem;
+}
+
+/* HEADER */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 1.25rem;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.header-title {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: .04em;
+}
+.header-sub {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--mono);
+  margin-top: 2px;
+}
+.header-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  flex-shrink: 0;
+}
+
+/* MAIN */
+.main { max-width: 680px; margin: 0 auto; padding: 1.25rem 1rem; }
+
+/* SECTION */
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.1rem 1.1rem;
+  margin-bottom: 1rem;
+}
+.section-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.section-label::before {
+  content: '';
+  width: 3px; height: 12px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+/* FORM */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+@media (max-width: 420px) {
+  .form-grid { grid-template-columns: 1fr 1fr; }
+  .form-grid .field-fecha { grid-column: 1 / -1; }
+}
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: .04em;
+}
+.field input {
+  height: 38px;
+  padding: 0 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  width: 100%;
+  -webkit-appearance: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.field input::placeholder { color: rgba(125,133,144,.5); }
+.field input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(56,139,253,.15);
+}
+.form-actions { display: flex; gap: 8px; }
+.btn {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .1s;
+  letter-spacing: .03em;
+  flex-shrink: 0;
+}
+.btn:hover { background: var(--surface2); border-color: rgba(255,255,255,.2); }
+.btn:active { transform: scale(.97); }
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  flex: 1;
+}
+.btn-primary:hover { background: #58a6ff; border-color: #58a6ff; }
+.btn-danger {
+  color: var(--red);
+  border-color: rgba(248,81,73,.3);
+}
+.btn-danger:hover { background: var(--red-bg); }
+
+.error-msg {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--red);
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: var(--red-bg);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--red);
+  display: none;
+}
+
+/* METRICS */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+@media (max-width: 500px) {
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: .85rem .9rem;
+}
+.metric-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.metric-value {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+}
+.metric-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.metric-card.danger .metric-value { color: var(--red); }
+.metric-card.warning .metric-value { color: var(--amber); }
+
+/* CHART */
+.chart-wrap {
+  position: relative;
+  width: 100%;
+  height: 280px;
+}
+@media (max-width: 480px) { .chart-wrap { height: 230px; } }
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 1rem;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+.chart-legend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-bar {
+  width: 12px; height: 12px;
+  border-radius: 3px;
+}
+.legend-line {
+  width: 20px; height: 2px;
+  border-top: 2px dashed;
+}
+
+/* TABLE */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 12px;
+  min-width: 520px;
+}
+thead th {
+  text-align: left;
+  padding: 6px 10px;
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+tbody tr { border-bottom: 1px solid var(--border); }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: rgba(255,255,255,.02); }
+tbody td { padding: 8px 10px; vertical-align: middle; }
+.num { text-align: right; }
+.badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+.badge-red { background: var(--red-bg); color: var(--red); }
+.badge-amber { background: var(--amber-bg); color: var(--amber); }
+.badge-green { background: var(--green-bg); color: var(--green); }
+.del-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color .15s, background .15s;
+}
+.del-btn:hover { color: var(--red); background: var(--red-bg); }
+
+/* EMPTY */
+.empty-state {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+.empty-icon {
+  font-size: 32px;
+  margin-bottom: .75rem;
+  opacity: .4;
+}
+.empty-state p { line-height: 1.6; }
+
+/* FOOTER */
+.footer {
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: rgba(125,133,144,.4);
+  margin-top: 2rem;
+  letter-spacing: .06em;
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div>
+    <div class="header-title">// Wall Street manipulation tracker</div>
+    <div class="header-sub">mín &lt; 60.000 · máx &gt; 76.000</div>
+  </div>
+  <div class="header-dot" id="storage-dot" title="Datos guardados en localStorage"></div>
+</header>
+
+<main class="main">
+
+  <!-- FORM -->
+  <div class="section">
+    <div class="section-label">Ingreso de datos</div>
+    <div class="form-grid">
+      <div class="field field-fecha">
+        <label>Fecha (dd/mm/aaaa)</label>
+        <input type="text" id="inp-fecha" placeholder="03/04/2026" maxlength="10" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label>Mínimo</label>
+        <input type="number" id="inp-min" placeholder="58500" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label>Máximo</label>
+        <input type="number" id="inp-max" placeholder="77200" inputmode="decimal">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="addRow()">+ Agregar</button>
+      <button class="btn btn-danger" onclick="clearAll()">Borrar todo</button>
+    </div>
+    <div class="error-msg" id="form-error"></div>
+  </div>
+
+  <!-- METRICS -->
+  <div class="metrics-grid" id="metrics-section" style="display:none">
+    <div class="metric-card">
+      <div class="metric-label">Días</div>
+      <div class="metric-value" id="m-dias">0</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Amplitud prom.</div>
+      <div class="metric-value" id="m-amp-pct">—</div>
+      <div class="metric-sub" id="m-amp-nom">—</div>
+    </div>
+    <div class="metric-card danger">
+      <div class="metric-label">Mín &lt; 60k</div>
+      <div class="metric-value" id="m-alertmin">0</div>
+      <div class="metric-sub">días</div>
+    </div>
+    <div class="metric-card warning">
+      <div class="metric-label">Máx &gt; 76k</div>
+      <div class="metric-value" id="m-alertmax">0</div>
+      <div class="metric-sub">días</div>
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <div class="section" id="chart-section" style="display:none">
+    <div class="section-label">Rango diario</div>
+    <div class="chart-legend">
+      <span><span class="legend-bar" style="background:#388bfd"></span>Normal</span>
+      <span><span class="legend-bar" style="background:#f85149"></span>Mín bajo 60k</span>
+      <span><span class="legend-bar" style="background:#d29922"></span>Máx sobre 76k</span>
+      <span><span class="legend-line" style="border-color:#f85149"></span>60.000</span>
+      <span><span class="legend-line" style="border-color:#d29922"></span>76.000</span>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="main-chart"></canvas>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="section" id="table-section" style="display:none">
+    <div class="section-label">Registros</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th class="num">Mínimo</th>
+            <th class="num">Máximo</th>
+            <th class="num">Amp. $</th>
+            <th class="num">Amp. %</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="data-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- EMPTY -->
+  <div id="empty-msg" class="section empty-state">
+    <div class="empty-icon">📈</div>
+    <p>Sin datos aún.<br>Ingresá el primer día hábil arriba.</p>
+  </div>
+
+  <div class="footer">DATOS GUARDADOS EN LOCALSTORAGE · SOLO EN ESTE DISPOSITIVO</div>
+</main>
+
+<script>
+const STORAGE_KEY = 'dias_habiles_v1';
+const MIN_ALERT = 60000;
+const MAX_ALERT = 76000;
+let chartInstance = null;
+
+/* ---- Storage ---- */
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+function saveData(rows) { localStorage.setItem(STORAGE_KEY, JSON.stringify(rows)); }
+
+/* ---- Formatting ---- */
+function fmt(n) {
+  return Number(n).toLocaleString('es-AR', { maximumFractionDigits: 0 });
+}
+function fmtPct(v) { return v.toFixed(2) + '%'; }
+
+/* ---- Date parse & validate ---- */
+function parseDateDMY(s) {
+  const parts = s.trim().split('/');
+  if (parts.length !== 3) return null;
+  const [d, m, y] = parts.map(Number);
+  if ([d, m, y].some(isNaN)) return null;
+  if (m < 1 || m > 12 || d < 1 || d > 31 || y < 2000) return null;
+  const dt = new Date(y, m - 1, d);
+  if (dt.getDate() !== d || dt.getMonth() !== m - 1 || dt.getFullYear() !== y) return null;
+  const dow = dt.getDay();
+  if (dow === 0 || dow === 6) return null; // fin de semana
+  const label = `${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y}`;
+  return { ts: dt.getTime(), label };
+}
+
+/* ---- UI helpers ---- */
+function showError(msg) {
+  const el = document.getElementById('form-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function clearError() {
+  document.getElementById('form-error').style.display = 'none';
+}
+
+/* ---- ADD ROW ---- */
+function addRow() {
+  clearError();
+  const fecha = document.getElementById('inp-fecha').value;
+  const minV  = parseFloat(document.getElementById('inp-min').value);
+  const maxV  = parseFloat(document.getElementById('inp-max').value);
+
+  const dt = parseDateDMY(fecha);
+  if (!dt) { showError('Fecha inválida o es fin de semana. Formato: dd/mm/aaaa.'); return; }
+  if (isNaN(minV) || isNaN(maxV)) { showError('Ingresá valores numéricos para mínimo y máximo.'); return; }
+  if (minV <= 0 || maxV <= 0) { showError('Los valores deben ser positivos.'); return; }
+  if (minV >= maxV) { showError('El mínimo debe ser menor al máximo.'); return; }
+
+  const rows = loadData();
+  if (rows.find(r => r.label === dt.label)) { showError('Ya existe un registro para esa fecha.'); return; }
+
+  rows.push({ label: dt.label, ts: dt.ts, min: minV, max: maxV });
+  rows.sort((a, b) => a.ts - b.ts);
+  saveData(rows);
+
+  document.getElementById('inp-fecha').value = '';
+  document.getElementById('inp-min').value   = '';
+  document.getElementById('inp-max').value   = '';
+  document.getElementById('inp-fecha').focus();
+  render();
+}
+
+/* ---- DELETE ROW ---- */
+function deleteRow(ts) {
+  const rows = loadData().filter(r => r.ts !== Number(ts));
+  saveData(rows);
+  render();
+}
+
+/* ---- CLEAR ALL ---- */
+function clearAll() {
+  if (!confirm('¿Borrar todos los datos? Esta acción no se puede deshacer.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  render();
+}
+
+/* ---- MAIN RENDER ---- */
+function render() {
+  const rows = loadData();
+  const empty = rows.length === 0;
+
+  document.getElementById('empty-msg').style.display      = empty ? 'block' : 'none';
+  document.getElementById('chart-section').style.display  = empty ? 'none'  : 'block';
+  document.getElementById('table-section').style.display  = empty ? 'none'  : 'block';
+  document.getElementById('metrics-section').style.display= empty ? 'none'  : 'grid';
+
+  if (!empty) {
+    const amps    = rows.map(r => r.max - r.min);
+    const avgAmp  = amps.reduce((a, b) => a + b, 0) / amps.length;
+    const avgPct  = rows.map(r => ((r.max - r.min) / r.min) * 100).reduce((a, b) => a + b, 0) / rows.length;
+    const alertMin = rows.filter(r => r.min < MIN_ALERT).length;
+    const alertMax = rows.filter(r => r.max > MAX_ALERT).length;
+
+    document.getElementById('m-dias').textContent     = rows.length;
+    document.getElementById('m-amp-pct').textContent  = fmtPct(avgPct);
+    document.getElementById('m-amp-nom').textContent  = '$ ' + fmt(avgAmp);
+    document.getElementById('m-alertmin').textContent = alertMin;
+    document.getElementById('m-alertmax').textContent = alertMax;
+
+    renderChart(rows);
+    renderTable(rows);
+  }
+}
+
+/* ---- CHART ---- */
+function renderChart(rows) {
+  const labels  = rows.map(r => r.label);
+  const minData = rows.map(r => r.min);
+  const maxData = rows.map(r => r.max);
+
+  const allVals  = [...minData, ...maxData];
+  const dataMin  = Math.min(...allVals);
+  const dataMax  = Math.max(...allVals);
+  const pad      = Math.max((dataMax - dataMin) * 0.15, 3000);
+  const yMin     = Math.floor(Math.min(dataMin, MIN_ALERT - pad) / 1000) * 1000;
+  const yMax     = Math.ceil(Math.max(dataMax, MAX_ALERT + pad)  / 1000) * 1000;
+
+  const barColors = rows.map(r => {
+    if (r.min < MIN_ALERT) return 'rgba(248,81,73,.65)';
+    if (r.max > MAX_ALERT) return 'rgba(210,153,34,.65)';
+    return 'rgba(56,139,253,.65)';
+  });
+  const borderColors = rows.map(r => {
+    if (r.min < MIN_ALERT) return '#f85149';
+    if (r.max > MAX_ALERT) return '#d29922';
+    return '#388bfd';
+  });
+
+  if (chartInstance) { chartInstance.destroy(); }
+
+  chartInstance = new Chart(document.getElementById('main-chart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Rango',
+          data: rows.map(r => r.max - r.min),
+          base: minData,
+          backgroundColor: barColors,
+          borderColor: borderColors,
+          borderWidth: 1.5,
+          borderRadius: 3,
+        },
+        {
+          label: 'Mínimo',
+          data: minData,
+          type: 'line',
+          borderColor: 'rgba(248,81,73,.5)',
+          borderWidth: 1.5,
+          borderDash: [4, 3],
+          pointRadius: 3,
+          pointBackgroundColor: '#f85149',
+          pointBorderColor: 'transparent',
+          tension: 0.35,
+          order: 0,
+        },
+        {
+          label: 'Máximo',
+          data: maxData,
+          type: 'line',
+          borderColor: 'rgba(210,153,34,.5)',
+          borderWidth: 1.5,
+          borderDash: [4, 3],
+          pointRadius: 3,
+          pointBackgroundColor: '#d29922',
+          pointBorderColor: 'transparent',
+          tension: 0.35,
+          order: 0,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1c2128',
+          borderColor: 'rgba(255,255,255,.12)',
+          borderWidth: 1,
+          titleColor: '#e6edf3',
+          bodyColor: '#7d8590',
+          titleFont: { family: "'IBM Plex Mono'", size: 12 },
+          bodyFont: { family: "'IBM Plex Mono'", size: 11 },
+          padding: 10,
+          callbacks: {
+            title: ctx => ctx[0].label,
+            label: ctx => {
+              const r = rows[ctx.dataIndex];
+              if (!r) return '';
+              const amp = r.max - r.min;
+              const pct = ((r.max - r.min) / r.min * 100).toFixed(2);
+              const alerts = [];
+              if (r.min < MIN_ALERT) alerts.push('⚠ mín bajo 60.000');
+              if (r.max > MAX_ALERT) alerts.push('⚠ máx sobre 76.000');
+              return [
+                `mín: $ ${fmt(r.min)}`,
+                `máx: $ ${fmt(r.max)}`,
+                `amp: $ ${fmt(amp)}  (${pct}%)`,
+                ...alerts
+              ];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,.05)' },
+          ticks: {
+            color: '#7d8590',
+            font: { family: "'IBM Plex Mono'", size: 10 },
+            maxRotation: 45,
+            autoSkip: rows.length > 20,
+          }
+        },
+        y: {
+          min: yMin, max: yMax,
+          grid: { color: 'rgba(255,255,255,.05)' },
+          ticks: {
+            color: '#7d8590',
+            font: { family: "'IBM Plex Mono'", size: 10 },
+            callback: v => fmt(v)
+          }
+        }
+      }
+    },
+    plugins: [{
+      id: 'refLines',
+      afterDraw(chart) {
+        const { ctx, chartArea: { left, right }, scales: { y } } = chart;
+        [
+          [MIN_ALERT, '#f85149', '60.000'],
+          [MAX_ALERT, '#d29922', '76.000']
+        ].forEach(([val, col, lbl]) => {
+          const yPos = y.getPixelForValue(val);
+          ctx.save();
+          ctx.strokeStyle = col;
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([6, 4]);
+          ctx.globalAlpha = .8;
+          ctx.beginPath();
+          ctx.moveTo(left, yPos);
+          ctx.lineTo(right, yPos);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.globalAlpha = 1;
+          ctx.fillStyle = col;
+          ctx.font = "500 10px 'IBM Plex Mono'";
+          ctx.fillText(lbl, left + 4, yPos - 4);
+          ctx.restore();
+        });
+      }
+    }]
+  });
+}
+
+/* ---- TABLE ---- */
+function renderTable(rows) {
+  const tbody = document.getElementById('data-tbody');
+  tbody.innerHTML = '';
+  [...rows].reverse().forEach(r => {
+    const amp    = r.max - r.min;
+    const ampPct = ((r.max - r.min) / r.min * 100).toFixed(2);
+    let badges   = '';
+    if (r.min < MIN_ALERT) badges += `<span class="badge badge-red">Mín bajo</span> `;
+    if (r.max > MAX_ALERT) badges += `<span class="badge badge-amber">Máx alto</span>`;
+    if (!badges)            badges  = `<span class="badge badge-green">Normal</span>`;
+
+    const minColor = r.min < MIN_ALERT ? 'color:#f85149' : '';
+    const maxColor = r.max > MAX_ALERT ? 'color:#d29922' : '';
+
+    tbody.innerHTML += `<tr>
+      <td style="font-weight:500;white-space:nowrap">${r.label}</td>
+      <td class="num" style="${minColor}">$ ${fmt(r.min)}</td>
+      <td class="num" style="${maxColor}">$ ${fmt(r.max)}</td>
+      <td class="num">$ ${fmt(amp)}</td>
+      <td class="num">${ampPct}%</td>
+      <td>${badges}</td>
+      <td><button class="del-btn" onclick="deleteRow(${r.ts})" title="Eliminar">×</button></td>
+    </tr>`;
+  });
+}
+
+/* ---- KEYBOARD ---- */
+document.getElementById('inp-max').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addRow();
+});
+document.getElementById('inp-fecha').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('inp-min').focus();
+});
+document.getElementById('inp-min').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('inp-max').focus();
+});
+
+/* ---- AUTO-FORMAT fecha ---- */
+document.getElementById('inp-fecha').addEventListener('input', function() {
+  let v = this.value.replace(/\D/g, '');
+  if (v.length > 2) v = v.slice(0,2) + '/' + v.slice(2);
+  if (v.length > 5) v = v.slice(0,5) + '/' + v.slice(5);
+  this.value = v.slice(0,10);
+});
+
+/* ---- INIT ---- */
+render();
+</script>
+</body>
+</html>
