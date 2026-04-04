@@ -112,6 +112,18 @@ function render() {
 
 /* ---- CHART ---- */
 function renderChart(rows) {
+  const chartArea = document.getElementById('chart-area');
+  
+  // Ajuste de ancho: mostrar ~5 por pantalla (680px max / 5 = ~136px por barra)
+  // Forzamos un ancho mínimo por cada fecha si hay más de 5.
+  if (rows.length > 5) {
+    const minWidthPerDate = 120; // píxeles por fecha
+    chartArea.style.width = (rows.length * minWidthPerDate) + 'px';
+  } else {
+    chartArea.style.width = '100%';
+  }
+
+  const canvas = document.getElementById('main-chart');
   const labels  = rows.map(r => r.label);
   const minData = rows.map(r => r.min);
   const maxData = rows.map(r => r.max);
@@ -136,7 +148,7 @@ function renderChart(rows) {
 
   if (chartInstance) { chartInstance.destroy(); }
 
-  chartInstance = new Chart(document.getElementById('main-chart'), {
+  chartInstance = new Chart(canvas, {
     type: 'bar',
     data: {
       labels,
@@ -219,7 +231,7 @@ function renderChart(rows) {
             color: '#7d8590',
             font: { family: "'IBM Plex Mono'", size: 10 },
             maxRotation: 45,
-            autoSkip: rows.length > 20,
+            autoSkip: false,
           }
         },
         y: {
@@ -261,6 +273,10 @@ function renderChart(rows) {
       }
     }]
   });
+
+  // Scroll al final si se acaba de agregar un dato
+  const wrap = document.querySelector('.chart-wrap');
+  wrap.scrollLeft = wrap.scrollWidth;
 }
 
 /* ---- TABLE ---- */
