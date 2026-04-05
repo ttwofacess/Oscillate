@@ -5,6 +5,61 @@ let chartInstance = null;
 let currentPage = 1;
 const pageSize = 5;
 
+/* ---- Navigation ---- */
+function switchTab(tabId, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  btn.classList.add('active');
+  
+  if (tabId === 'search-view') {
+    document.getElementById('inp-search').focus();
+  } else {
+    render(); // Refrescar gráficos por si hubo cambios
+  }
+}
+
+/* ---- SEARCH LOGIC ---- */
+function doSearch() {
+  const val = parseFloat(document.getElementById('inp-search').value);
+  const rows = loadData();
+  const tbody = document.getElementById('search-tbody');
+  const emptyMsg = document.getElementById('search-results-empty');
+  const tableWrap = document.getElementById('search-results-table');
+
+  if (isNaN(val)) {
+    emptyMsg.style.display = 'block';
+    tableWrap.style.display = 'none';
+    return;
+  }
+
+  const matches = rows.filter(r => val >= r.min && val <= r.max);
+
+  if (matches.length === 0) {
+    emptyMsg.innerHTML = `<p>No hay coincidencias para <b>$ ${fmt(val)}</b>.<br>El precio no pasó por ese valor en los días registrados.</p>`;
+    emptyMsg.style.display = 'block';
+    tableWrap.style.display = 'none';
+  } else {
+    emptyMsg.style.display = 'none';
+    tableWrap.style.display = 'block';
+    tbody.innerHTML = '';
+    
+    matches.reverse().forEach(r => {
+      let rel = '';
+      if (val === r.min) rel = '<span class="badge badge-red">Mínimo exacto</span>';
+      else if (val === r.max) rel = '<span class="badge badge-amber">Máximo exacto</span>';
+      else rel = '<span class="badge badge-green">En rango</span>';
+
+      tbody.innerHTML += `<tr>
+        <td style="font-weight:500">${r.label}</td>
+        <td class="num">$ ${fmt(r.min)}</td>
+        <td class="num">$ ${fmt(r.max)}</td>
+        <td>${rel}</td>
+      </tr>`;
+    });
+  }
+}
+
 /* ---- Storage ---- */
 function loadData() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
