@@ -193,6 +193,14 @@ body {
   border-color: rgba(248,81,73,.3);
 }
 .btn-danger:hover { background: var(--red-bg); }
+.btn-secondary {
+  color: var(--muted);
+}
+.btn-secondary:hover {
+  color: var(--text);
+  background: var(--surface2);
+  border-color: var(--border2);
+}
 
 .error-msg {
   font-family: var(--mono);
