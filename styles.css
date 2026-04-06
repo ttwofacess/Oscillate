@@ -163,7 +163,24 @@ body {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(56,139,253,.15);
 }
-.form-actions { display: flex; gap: 8px; }
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.form-actions-row {
+  display: flex;
+  gap: 8px;
+}
+.form-actions-row .btn {
+  flex: 1;
+}
+.form-actions-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+}
+
 .btn {
   height: 38px;
   padding: 0 16px;
@@ -185,7 +202,7 @@ body {
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
-  flex: 1;
+  width: 100%;
 }
 .btn-primary:hover { background: #58a6ff; border-color: #58a6ff; }
 .btn-danger {
