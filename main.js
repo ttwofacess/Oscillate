@@ -60,6 +60,39 @@ function doSearch() {
   }
 }
 
+function findExtreme(type) {
+  const rows = loadData();
+  if (rows.length === 0) return;
+
+  let extremeRow;
+  if (type === 'min') {
+    extremeRow = rows.reduce((prev, curr) => (prev.min < curr.min) ? prev : curr);
+  } else {
+    extremeRow = rows.reduce((prev, curr) => (prev.max > curr.max) ? prev : curr);
+  }
+
+  document.getElementById('inp-search').value = '';
+  
+  const tbody = document.getElementById('search-tbody');
+  const emptyMsg = document.getElementById('search-results-empty');
+  const tableWrap = document.getElementById('search-results-table');
+
+  emptyMsg.style.display = 'none';
+  tableWrap.style.display = 'block';
+  tbody.innerHTML = '';
+
+  const labelBadge = type === 'min' 
+    ? '<span class="badge badge-red">Mínimo Histórico</span>' 
+    : '<span class="badge badge-amber">Máximo Histórico</span>';
+
+  tbody.innerHTML = `<tr>
+    <td style="font-weight:500">${extremeRow.label}</td>
+    <td class="num">$ ${fmt(extremeRow.min)}</td>
+    <td class="num">$ ${fmt(extremeRow.max)}</td>
+    <td>${labelBadge}</td>
+  </tr>`;
+}
+
 /* ---- Storage ---- */
 function loadData() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
