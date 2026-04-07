@@ -133,9 +133,14 @@
   <div id="search-view" class="tab-content">
     <div class="section">
       <div class="section-label">Buscador de coincidencia</div>
-      <div class="field" style="margin-bottom: 1.5rem;">
+      <div class="field" style="margin-bottom: 1rem;">
         <label>Valor a buscar ($)</label>
         <input type="number" id="inp-search" placeholder="Ej: 71500" inputmode="decimal" oninput="doSearch()">
+      </div>
+
+      <div class="search-quick-actions">
+        <button class="btn btn-secondary" onclick="findExtreme('min')">📉 Menor Mínimo</button>
+        <button class="btn btn-secondary" onclick="findExtreme('max')">📈 Mayor Máximo</button>
       </div>
 
       <div id="search-results-empty" class="empty-state" style="padding: 1rem 0;">

@@ -231,6 +231,18 @@ body {
   display: none;
 }
 
+.search-quick-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+}
+.search-quick-actions .btn {
+  flex: 1;
+  font-size: 11px;
+  padding: 0 8px;
+  white-space: nowrap;
+}
+
 /* METRICS */
 .metrics-grid {
   display: grid;
