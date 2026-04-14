@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Background -->
+  <rect width="32" height="32" rx="6" fill="#0d1117"/>
+  <!-- Chart bars (blue, red, amber) -->
+  <rect x="5" y="14" width="4" height="12" rx="1" fill="#388bfd" opacity=".8"/>
+  <rect x="11" y="8" width="4" height="18" rx="1" fill="#f85149" opacity=".8"/>
+  <rect x="17" y="10" width="4" height="16" rx="1" fill="#d29922" opacity=".8"/>
+  <rect x="23" y="16" width="4" height="10" rx="1" fill="#388bfd" opacity=".8"/>
+  <!-- Trend line -->
+  <polyline points="7,13 13,7 19,9 25,15" fill="none" stroke="#e6edf3" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Data dots -->
+  <circle cx="7" cy="13" r="1.5" fill="#388bfd"/>
+  <circle cx="13" cy="7" r="1.5" fill="#f85149"/>
+  <circle cx="19" cy="9" r="1.5" fill="#d29922"/>
+  <circle cx="25" cy="15" r="1.5" fill="#388bfd"/>
+</svg>
