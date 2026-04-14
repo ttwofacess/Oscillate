@@ -1,0 +1,36 @@
+/* CHART */
+.chart-wrap {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.chart-wrap canvas {
+  min-width: 100%;
+  height: 100% !important;
+}
+@media (max-width: 480px) { .chart-wrap { height: 230px; } }
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 1rem;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+.chart-legend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-bar {
+  width: 12px; height: 12px;
+  border-radius: 3px;
+}
+.legend-line {
+  width: 20px; height: 2px;
+  border-top: 2px dashed;
+}

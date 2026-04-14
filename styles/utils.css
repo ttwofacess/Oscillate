@@ -1,0 +1,37 @@
+.del-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color .15s, background .15s;
+}
+.del-btn:hover { color: var(--red); background: var(--red-bg); }
+
+/* EMPTY */
+.empty-state {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+.empty-icon {
+  font-size: 32px;
+  margin-bottom: .75rem;
+  opacity: .4;
+}
+.empty-state p { line-height: 1.6; }
+
+/* FOOTER */
+.footer {
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: rgba(125,133,144,.4);
+  margin-top: 2rem;
+  letter-spacing: .06em;
+}
