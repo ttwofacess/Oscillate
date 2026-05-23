@@ -19,5 +19,16 @@ document.getElementById('inp-fecha').addEventListener('input', function() {
   this.value = v.slice(0,10);
 });
 
+// Clear validation errors on input
+['inp-fecha', 'inp-min', 'inp-max'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    document.getElementById(id).classList.remove('is-invalid');
+    // Si no quedan campos invalidos, podemos limpiar el mensaje de error general
+    if (!document.querySelector('.field input.is-invalid')) {
+      clearError();
+    }
+  });
+});
+
 // Init
 render();
