@@ -35,6 +35,10 @@
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(56,139,253,.15);
 }
+.field input.is-invalid {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(248,81,73,.15);
+}
 .form-actions {
   display: flex;
   flex-direction: column;
