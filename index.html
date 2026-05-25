@@ -136,7 +136,7 @@
       <div class="section-label">Buscador de coincidencia</div>
       <div class="field" style="margin-bottom: 1rem;">
         <label>Valor a buscar ($)</label>
-        <input type="number" id="inp-search" placeholder="Ej: 71500" inputmode="decimal" oninput="doSearch()">
+        <input type="text" id="inp-search" placeholder="Ej: 71500" inputmode="decimal" autocomplete="off" pattern="[0-9]+([.,][0-9]+)?" oninput="doSearch()">
       </div>
 
       <div class="search-quick-actions">
