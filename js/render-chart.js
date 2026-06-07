@@ -15,8 +15,17 @@ function renderChart(rows) {
   const labels  = rows.map(r => r.label);
   const minData = rows.map(r => r.min);
   const maxData = rows.map(r => r.max);
+  const midData = rows.map(r => (r.min + r.max) / 2);
 
-  const allVals  = [...minData, ...maxData];
+  // Calculate MA50
+  const ma50Data = midData.map((_, idx, arr) => {
+    const start = Math.max(0, idx - 49);
+    const window = arr.slice(start, idx + 1);
+    const sum = window.reduce((a, b) => a + b, 0);
+    return sum / window.length;
+  });
+
+  const allVals  = [...minData, ...maxData, ...ma50Data];
   const dataMin  = Math.min(...allVals);
   const dataMax  = Math.max(...allVals);
   const pad      = Math.max((dataMax - dataMin) * 0.15, 3000);
@@ -49,6 +58,16 @@ function renderChart(rows) {
           borderColor: borderColors,
           borderWidth: 1.5,
           borderRadius: 3,
+        },
+        {
+          label: 'MA 50',
+          data: ma50Data,
+          type: 'line',
+          borderColor: '#9333ea',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.4,
+          order: -1,
         },
         {
           label: 'Mínimo',
@@ -95,19 +114,26 @@ function renderChart(rows) {
           callbacks: {
             title: ctx => ctx[0].label,
             label: ctx => {
-              const r = rows[ctx.dataIndex];
+              const idx = ctx.dataIndex;
+              const r = rows[idx];
               if (!r) return '';
               const amp = r.max - r.min;
               const pct = ((r.max - r.min) / r.min * 100).toFixed(2);
+              const maVal = ma50Data[idx];
+              const maCount = Math.min(idx + 1, 50);
+              
               const alerts = [];
               if (r.min < MIN_ALERT) alerts.push('⚠ mín bajo 60.000');
               if (r.max > MAX_ALERT) alerts.push('⚠ máx sobre 76.000');
-              return [
+              
+              const lines = [
                 `mín: $ ${fmt(r.min)}`,
                 `máx: $ ${fmt(r.max)}`,
                 `amp: $ ${fmt(amp)}  (${pct}%)`,
-                ...alerts
+                `MA 50: $ ${fmt(maVal)} ${maCount < 50 ? `(n=${maCount})` : ''}`
               ];
+              if (maCount < 50) lines.push('  *MA calculada con datos disponibles');
+              return [...lines, ...alerts];
             }
           }
         }
