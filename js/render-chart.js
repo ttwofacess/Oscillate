@@ -25,6 +25,18 @@ function renderChart(rows) {
     return sum / window.length;
   });
 
+  const isReversal = midData.map((mid, idx) => {
+    const ma = ma50Data[idx];
+    if (!ma || ma === 0) return false;
+    return Math.abs(mid - ma) / ma >= REVERSAL_THRESHOLD;
+  });
+
+  const isHighReversal = midData.map((mid, idx) => {
+    const ma = ma50Data[idx];
+    if (!ma || ma === 0) return false;
+    return Math.abs(mid - ma) / ma >= HIGH_REVERSAL_THRESHOLD;
+  });
+
   const allVals  = [...minData, ...maxData, ...ma50Data];
   const dataMin  = Math.min(...allVals);
   const dataMax  = Math.max(...allVals);
@@ -32,14 +44,18 @@ function renderChart(rows) {
   const yMin     = Math.floor(Math.min(dataMin, MIN_ALERT - pad) / 1000) * 1000;
   const yMax     = Math.ceil(Math.max(dataMax, MAX_ALERT + pad)  / 1000) * 1000;
 
-  const barColors = rows.map(r => {
-    if (r.min < MIN_ALERT) return 'rgba(248,81,73,.65)';
-    if (r.max > MAX_ALERT) return 'rgba(210,153,34,.65)';
+  const barColors = rows.map((r, i) => {
+    if (r.min < MIN_ALERT)   return 'rgba(248,81,73,.65)';
+    if (r.max > MAX_ALERT)   return 'rgba(210,153,34,.65)';
+    if (isHighReversal[i])   return 'rgba(0,255,0,.65)';
+    if (isReversal[i])       return 'rgba(255,0,127,.65)';
     return 'rgba(56,139,253,.65)';
   });
-  const borderColors = rows.map(r => {
-    if (r.min < MIN_ALERT) return '#f85149';
-    if (r.max > MAX_ALERT) return '#d29922';
+  const borderColors = rows.map((r, i) => {
+    if (r.min < MIN_ALERT)   return '#f85149';
+    if (r.max > MAX_ALERT)   return '#d29922';
+    if (isHighReversal[i])   return '#00ff00';
+    if (isReversal[i])       return '#ff007f';
     return '#388bfd';
   });
 
@@ -125,6 +141,15 @@ function renderChart(rows) {
               const alerts = [];
               if (r.min < MIN_ALERT) alerts.push('⚠ mín bajo 60.000');
               if (r.max > MAX_ALERT) alerts.push('⚠ máx sobre 76.000');
+              if (isHighReversal[idx]) {
+                const dev = (((midData[idx] - ma50Data[idx]) / ma50Data[idx]) * 100).toFixed(1);
+                const dir = midData[idx] > ma50Data[idx] ? 'por encima' : 'por debajo';
+                alerts.push(`🚨 Alta prob. reversión: ${dev}% ${dir} de MA50`);
+              } else if (isReversal[idx]) {
+                const dev = (((midData[idx] - ma50Data[idx]) / ma50Data[idx]) * 100).toFixed(1);
+                const dir = midData[idx] > ma50Data[idx] ? 'por encima' : 'por debajo';
+                alerts.push(`⚠ posible reversión: ${dev}% ${dir} de MA50`);
+              }
               
               const lines = [
                 `mín: $ ${fmt(r.min)}`,
@@ -182,6 +207,18 @@ function renderChart(rows) {
           ctx.fillStyle = col;
           ctx.font = "500 10px 'IBM Plex Mono'";
           ctx.fillText(lbl, left + 4, yPos - 4);
+          ctx.restore();
+        });
+
+        midData.forEach((mid, idx) => {
+          if (!isReversal[idx] && !isHighReversal[idx]) return;
+          const xPos = chart.scales.x.getPixelForValue(idx);
+          const yPos = chart.scales.y.getPixelForValue(maxData[idx]);
+          ctx.save();
+          ctx.fillStyle = isHighReversal[idx] ? '#00ff00' : '#ff007f';
+          ctx.font = "bold 12px 'IBM Plex Mono'";
+          ctx.textAlign = 'center';
+          ctx.fillText('▲', xPos, yPos - 8); // marker above the bar
           ctx.restore();
         });
       }
